@@ -2,3 +2,5 @@
 *.zip
 *.jpg
 **/dist
+*.tgz
+**/__pycache__

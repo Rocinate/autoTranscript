@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from server.models import User, Transcript, TransHistory, db
+from models import User, Transcript, TransHistory, db
 
 user = Blueprint('user', __name__)
 
