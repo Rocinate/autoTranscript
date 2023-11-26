@@ -1,5 +1,5 @@
 <template>
-  <div id="title-wrapper">
+  <div class="content-wrapper">
     <div id="title">
       <div id="highlight">
         <h1>Ready to use</h1>
@@ -11,12 +11,14 @@
         summarization. Upload text and audio files to gain insightful analysis
         and creative responses using OpenAI api and advanced technologies.
       </a-typography-title>
-      <a-button type="primary" size="large"> Try it out ! </a-button>
+      <a-button id="jump" type="primary" size="large" @click="handleJump">
+        Try it out !
+      </a-button>
     </div>
   </div>
   <a-divider />
-  <a-row class="upload-wrapper">
-    <a-col :span="24">
+  <a-row id="upload-wrapper" justify="center">
+    <a-col :span="18">
       <a-upload-dragger
         v-model:fileList="fileList"
         name="file"
@@ -39,8 +41,10 @@ import { ref } from "vue";
 import { message } from "ant-design-vue";
 const fileList = ref([]);
 
-const titleStyle = {
-  lineHeight: "120px",
+// jump to the upload-wrapper element
+const handleJump = () => {
+  const uploadWrapper = document.getElementById("upload-wrapper");
+  uploadWrapper.scrollIntoView({ behavior: "smooth" });
 };
 
 // process file upload
@@ -70,12 +74,13 @@ function handleDrop(e) {
 </script>
 
 <style scoped>
-#title-wrapper {
+.content-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  min-height: 60vh;
+
 }
 
 #title {
@@ -94,5 +99,9 @@ h1 {
 
 .title-highlight {
   color: #1677ff;
+}
+
+#jump {
+    margin-top: 1rem;
 }
 </style>
