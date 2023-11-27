@@ -17,29 +17,98 @@
     </div>
   </div>
   <a-divider />
-  <a-row id="upload-wrapper" justify="center">
-    <a-col :span="18">
-      <a-upload-dragger
-        v-model:fileList="fileList"
-        name="file"
-        action="/api/upload"
-        @change="handleChange"
-        @drop="handleDrop"
+  <a-row id="upload-wrapper" justify="center" align="middle">
+    <a-col :span="6">
+      <a-typography-title :strong="true" :level="2"
+        >Create your task</a-typography-title
       >
-        <p class="ant-upload-drag-icon">
-          <inbox-outlined></inbox-outlined>
-        </p>
-        <p class="ant-upload-text">Click or drag file to this area to upload</p>
-        <p class="ant-upload-hint">Only support .mp4 or .mp3 files.</p>
-      </a-upload-dragger>
+    </a-col>
+    <a-col :span="8">
+      <a-card>
+        <a-form layout="vertical" :model="formState">
+          <a-form-item
+            label="Title"
+            :rules="[{ required: true, message: 'Please input title!' }]"
+          >
+            <a-input v-model:value="formState.title" />
+          </a-form-item>
+          <a-form-item
+            label="Content"
+            :rules="[{ required: true, message: 'Please input your content!' }]"
+          >
+            <a-input v-model:value="formState.content" />
+          </a-form-item>
+          <a-form-item
+            label="Task"
+            :rules="[{ required: true, message: 'Please choose a task type!' }]"
+          >
+            <a-select
+              v-model:value="formState.type"
+              placeholder="Please select a task type"
+            >
+              <a-select-option value="summary"
+                >Summary extraction</a-select-option
+              >
+              <a-select-option value="sentiment"
+                >Sentiment analysis</a-select-option
+              >
+            </a-select>
+          </a-form-item>
+          <a-form-item label="Upload">
+            <a-upload-dragger
+              v-model:fileList="formState.upload"
+              name="file"
+              action="/api/upload"
+              @change="handleChange"
+              @drop="handleDrop"
+            >
+              <p class="ant-upload-drag-icon">
+                <inbox-outlined></inbox-outlined>
+              </p>
+              <p class="ant-upload-text">
+                Click or drag file to this area to upload
+              </p>
+              <p class="ant-upload-hint">Only support .mp4 or .mp3 files.</p>
+            </a-upload-dragger>
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" @click.prevent="onSubmit">Create</a-button>
+            <a-button style="margin-left: 10px" @click="resetFields"
+              >Reset</a-button
+            >
+          </a-form-item>
+        </a-form>
+      </a-card>
     </a-col>
   </a-row>
+  <a-divider />
+  
+  <a-divider />
+  
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { message } from "ant-design-vue";
-const fileList = ref([]);
+
+const formState = reactive({
+  name: "",
+  delivery: false,
+  type: [],
+  resource: "",
+  desc: "",
+  upload: [],
+});
+
+const onSubmit = () => {
+  validate()
+    .then(() => {
+      console.log(toRaw(formState));
+    })
+    .catch((err) => {
+      console.log("error", err);
+    });
+};
 
 // jump to the upload-wrapper element
 const handleJump = () => {
@@ -52,7 +121,7 @@ const handleChange = (info) => {
   // limit file number to 1
   let resFileList = [...info.fileList];
   resFileList = resFileList.slice(-1);
-  fileList.value = resFileList;
+  formState.upload.value = resFileList;
 
   // get status of the uploading file
   const status = info.file.status;
@@ -80,7 +149,6 @@ function handleDrop(e) {
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-
 }
 
 #title {
@@ -102,6 +170,6 @@ h1 {
 }
 
 #jump {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 </style>

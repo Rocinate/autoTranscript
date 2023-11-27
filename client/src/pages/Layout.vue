@@ -51,7 +51,7 @@ const handleMenuClick = function(item) {
 }
 
 const layoutStyle = {
-  height: "100%"
+  minHeight: "100%"
 }
 
 const headerStyle = {
@@ -63,6 +63,7 @@ const contentStyle = {
   backgroundColor: "#fff",
   flex: 1,
   padding: "1rem 50px",
+  // paddingBottom: "200px"
 };
 
 const footerStyle = {
