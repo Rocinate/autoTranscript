@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
-// import Ping from '../components/Ping.vue'
-// import Transcripts from '../components/Transcripts.vue'
 
 import Layout from "../pages/Layout.vue";
 import Home from "../pages/Home/index.vue";

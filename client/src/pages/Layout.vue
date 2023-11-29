@@ -6,13 +6,11 @@
     <a-layout-content :style="contentStyle">
       <router-view></router-view>
     </a-layout-content>
-    <!-- <a-layout-footer :style="footerStyle">
-      <a-row>
-        <a-col></a-col>
-        <a-col></a-col>
-        <a-col></a-col>
+    <a-layout-footer :style="footerStyle">
+      <a-row align="middle" justify="center" style="padding: 1rem;">
+          <p style="margin:0;">Copy right <b>@Smart Transcript</b></p>
       </a-row>
-    </a-layout-footer> -->
+    </a-layout-footer>
   </a-layout>
 </template>
 
@@ -24,6 +22,11 @@ import { useRouter, useRoute } from 'vue-router';
 const route = useRoute()
 const router = useRouter()
 const current = ref([route.name.toLocaleLowerCase()]);
+
+// watch router change and update current menu
+router.afterEach((to, from) => {
+  current.value = [to.name.toLocaleLowerCase()]
+})
 
 const items = ref([
   {
@@ -69,6 +72,6 @@ const contentStyle = {
 const footerStyle = {
   textAlign: "center",
   color: "#fff",
-  backgroundColor: "#7dbcea",
+  backgroundColor: "#1677ff",
 };
 </script>

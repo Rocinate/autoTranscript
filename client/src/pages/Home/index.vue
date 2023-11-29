@@ -82,9 +82,6 @@
     </a-col>
   </a-row>
   <a-divider />
-  
-  <a-divider />
-  
 </template>
 
 <script setup>
