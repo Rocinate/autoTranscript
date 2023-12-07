@@ -6,8 +6,14 @@
         :label-col="{ span: 8 }"
         :wrapper-col="{ span: 16 }"
         @finish="onFinish"
-        @finishFailed="onFinishFailed"
       >
+      <a-form-item
+          label="email"
+          name="email"
+          :rules="[{ required: true, validator: checkEmail, trigger: 'blur' }]"
+        >
+          <a-input v-model:value="formState.email" />
+        </a-form-item>
         <a-form-item
           label="Username"
           name="username"
@@ -21,7 +27,7 @@
           name="password"
           :rules="[{ required: true, message: 'Please input your password!' }]"
         >
-          <a-input-password v-model:value="formState.password" />
+          <a-input-password v-model:visible="visible" v-model:value="formState.password" />
         </a-form-item>
 
         <a-form-item
@@ -29,10 +35,10 @@
           label="Confirm"
           name="confirm"
           :rules="[
-            { required: true, message: 'Please confirm your password!' },
+            { required: true, validator: confirmPassword },
           ]"
         >
-          <a-input-password v-model:value="formState.confirm" />
+          <a-input-password v-model:visible="visible" v-model:value="formState.confirm" />
         </a-form-item>
 
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
@@ -50,24 +56,68 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import { message } from "ant-design-vue";
+import { useRouter } from "vue-router";
+import request from "../../utils/request";
+
+const router = useRouter();
 const formState = reactive({
+  email: "",
   username: "",
   password: "",
-  confirm: ""
+  confirm: "",
 });
-
+const visible = ref(false);
 const isSignup = ref(false);
 
 const switchMode = () => {
   isSignup.value = !isSignup.value;
 };
 
+const confirmPassword = async (rule, value) => {
+  if (value !== formState.password) {
+    throw new Error("The two passwords that you entered do not match!");
+  }
+};
+
+const checkEmail = async (rule, value) => {
+  if (!value) {
+    throw new Error("Please input your email!");
+  }
+  // validate email
+  const reg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
+  if (!reg.test(value)) {
+    throw new Error("Please input a valid email!");
+  }
+
+  if (!isSignup.value) {
+    return;
+  }
+
+  // check if email has been registered
+  const res = await request.get("/user/checkEmail", { email: value });
+
+  if (res.status === 'fail') {
+    throw new Error("This email has been registered!");
+  }
+};
+
 const onFinish = (values) => {
-  console.log("Success:", values);
+  if (isSignup.value) {
+    request.post("/user/signup", values).then((res) => {
+      message.success("Signup successfully!");
+      sessionStorage.setItem("token", res.token);
+      router.push("/")
+    });
+  } else {
+    request.post("/user/login", values).then((res) => {
+      message.success("Login successfully!");
+      sessionStorage.setItem("token", res.token);
+      router.push("/")
+    });
+  }
 };
-const onFinishFailed = (errorInfo) => {
-  console.log("Failed:", errorInfo);
-};
+
 </script>
 <style scoped>
 #login {

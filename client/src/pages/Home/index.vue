@@ -25,23 +25,23 @@
     </a-col>
     <a-col :span="8">
       <a-card>
-        <a-form layout="vertical" :model="formState">
-          <a-form-item
-            label="Title"
-            :rules="[{ required: true, message: 'Please input title!' }]"
-          >
-            <a-input v-model:value="formState.title" />
+        <a-form
+          ref="formRef"
+          layout="vertical"
+          :rules="rules"
+          name="custom-validation"
+          :model="formState"
+          @finish="handleFinish"
+          @finishFailed="handleFinishFailed"
+        >
+          <a-form-item has-feedback label="Title" name="title">
+            <a-input
+              v-model:value="formState.title"
+              type="text"
+              autocomplete="off"
+            />
           </a-form-item>
-          <a-form-item
-            label="Content"
-            :rules="[{ required: true, message: 'Please input your content!' }]"
-          >
-            <a-input v-model:value="formState.content" />
-          </a-form-item>
-          <a-form-item
-            label="Task"
-            :rules="[{ required: true, message: 'Please choose a task type!' }]"
-          >
+          <a-form-item has-feedback label="Task" name="type">
             <a-select
               v-model:value="formState.type"
               placeholder="Please select a task type"
@@ -54,11 +54,17 @@
               >
             </a-select>
           </a-form-item>
-          <a-form-item label="Upload">
+          <a-form-item has-feedback label="Content" name="content">
+            <a-input
+              v-model:value="formState.content"
+              type="text"
+              autocomplete="off"
+            />
+          </a-form-item>
+          <a-form-item label="Upload" name="upload">
             <a-upload-dragger
               v-model:fileList="formState.upload"
-              name="file"
-              action="/api/upload"
+              :action="action"
               @change="handleChange"
               @drop="handleDrop"
             >
@@ -71,9 +77,9 @@
               <p class="ant-upload-hint">Only support .mp4 or .mp3 files.</p>
             </a-upload-dragger>
           </a-form-item>
-          <a-form-item>
-            <a-button type="primary" @click.prevent="onSubmit">Create</a-button>
-            <a-button style="margin-left: 10px" @click="resetFields"
+          <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
+            <a-button type="primary" html-type="submit">Submit</a-button>
+            <a-button style="margin-left: 10px" @click="resetForm"
               >Reset</a-button
             >
           </a-form-item>
@@ -85,26 +91,58 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, toRaw } from "vue";
 import { message } from "ant-design-vue";
+import { InboxOutlined } from "@ant-design/icons-vue";
 
+const action = import.meta.env.MODE === 'development' ? 'http://localhost:5000/api/common/upload' : '/api/common/upload'
+
+const formRef = ref();
 const formState = reactive({
-  name: "",
-  delivery: false,
-  type: [],
+  title: "",
+  content: "",
+  type: "",
   resource: "",
-  desc: "",
   upload: [],
 });
 
-const onSubmit = () => {
-  validate()
-    .then(() => {
-      console.log(toRaw(formState));
-    })
-    .catch((err) => {
-      console.log("error", err);
-    });
+const validateContent = async (_rule, value) => {
+  
+};
+
+const rules = {
+  title: [
+    {
+      required: true,
+      trigger: "blur",
+      message: "Please input title",
+    },
+  ],
+  content: [
+    {
+      validator: validateContent,
+    },
+  ],
+  type: [
+    {
+      required: true,
+      trigger: "blur",
+      message: "Please choose a task type",
+    },
+  ],
+};
+
+const handleFinish = () => {
+  // console.log(toRaw(formState));
+  console.log(handleFinishFailed);
+};
+
+const handleFinishFailed = (errors) => {
+  console.log(errors);
+};
+
+const resetForm = () => {
+  formRef.value.resetFields();
 };
 
 // jump to the upload-wrapper element
@@ -129,7 +167,7 @@ const handleChange = (info) => {
   if (status === "done") {
     message.success(`${info.file.name} file uploaded successfully.`);
   } else if (status === "error") {
-    message.error(`${info.file.name} file upload failed.`);
+    message.error(`${info.file.name} file upload failed.`, 5);
   }
 };
 

@@ -40,8 +40,7 @@ const router = createRouter({
           name: "User",
           component: User,
           meta: {
-            // requiresAuth: true
-            requiresAuth: false
+            requiresAuth: true
           }
         },
       ],

@@ -154,7 +154,6 @@ async def update_transcript():
             task = transcript.task,
             user_id = transcript.user_id,
             finished = transcript.finished,
-            video_path = transcript.video_path,
             audio_path = transcript.audio_path
         )
         transcript.title = title

@@ -4,7 +4,21 @@ from models import User, Transcript, TransHistory, db
 
 user = Blueprint('user', __name__)
 
-@user.route('/create', methods=['POST'])
+@user.route('/checkEmail', methods=['GET'])
+def check_email():
+    response_object = {'status': 'success'}
+    email = request.args.get('email')
+
+    # check if email exists
+    user = User.query.filter_by(email=email).first()
+    if user:
+        response_object['msg'] = 'Email already exists'
+        response_object['status'] = 'fail'
+        return jsonify(response_object), 200
+
+    return jsonify(response_object)
+
+@user.route('/signup', methods=['POST'])
 def create_user():
     response_object = {'status': 'success'}
     post_data = request.get_json()
@@ -20,9 +34,9 @@ def create_user():
         return jsonify(response_object), 400
 
     # check if user already exists
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=email).first()
     if user:
-        response_object['msg'] = 'User already exists'
+        response_object['msg'] = 'email already exists'
         response_object['status'] = 'fail'
         return jsonify(response_object), 400
 
@@ -34,7 +48,12 @@ def create_user():
             email = email,
         ))
         db.session.commit()
+
+        # generate token
+        token = create_access_token(identity=user.id)
         response_object['msg'] = 'User created!'
+        response_object['token'] = token
+        return jsonify(response_object)
     except Exception as e:
         response_object['msg'] = str(e)
         response_object['status'] = 'fail'

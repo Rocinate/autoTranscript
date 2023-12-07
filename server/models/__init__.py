@@ -35,10 +35,9 @@ class Transcript(db.Model):
     created_on = db.Column(db.DateTime, nullable = False, default = db.func.current_timestamp())
     finished = db.Column(db.Boolean, nullable = False, default = False)
     analysis = db.Column(db.Text, nullable = True)
-    video_path = db.Column(db.String(200), nullable = True)
     audio_path = db.Column(db.String(200), nullable = True)
 
-    def __init__(self, title, content,task, user_id, finished = True, analysis = None, video_path = None, audio_path = None):
+    def __init__(self, title, content,task, user_id, finished = True, analysis = None, audio_path = None):
         self.title = title
         self.content = content
         self.analysis = analysis
@@ -46,7 +45,6 @@ class Transcript(db.Model):
         self.user_id = user_id
         self.finished = finished
         self.audio_path = audio_path
-        self.video_path = video_path
 
 class TransHistory(db.Model):
     __tablename__ = 'transHistory'
@@ -59,10 +57,9 @@ class TransHistory(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
     created_on = db.Column(db.DateTime, nullable = False, default = db.func.current_timestamp())
     finished = db.Column(db.Boolean, nullable = False, default = True)
-    video_path = db.Column(db.String(200), nullable = True)
     audio_path = db.Column(db.String(200), nullable = True)
 
-    def __init__(self, parent_id, title, content, analysis, task, user_id, finished = True, video_path = None, audio_path = None):
+    def __init__(self, parent_id, title, content, analysis, task, user_id, finished = True, audio_path = None):
         self.parent_id = parent_id
         self.title = title
         self.content = content
@@ -70,5 +67,4 @@ class TransHistory(db.Model):
         self.task = task
         self.user_id = user_id
         self.finished = finished
-        self.video_path = video_path
         self.audio_path = audio_path

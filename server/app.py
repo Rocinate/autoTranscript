@@ -27,7 +27,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 jwt = JWTManager()
 # set jwt extend time to 30min
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=30)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:password@172.19.228.4/chatroom'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:password@172.22.41.66/chatroom'
 
 # enable CORS
 CORS(app, resources={r'/*': {'origins': '*'}})
@@ -36,17 +36,16 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 jwt.init_app(app)
 
 # connect db and create all the tables if not exist
-# db.init_app(app)
+db.init_app(app)
 
 # # create all the tables if not exist
-# @app.before_first_request
-# def create_tables():
-#     db.create_all()
+with app.app_context():
+    db.create_all()
 
 # register blueprints
-app.register_blueprint(common)
-app.register_blueprint(user)
-app.register_blueprint(transcript)
+app.register_blueprint(common, url_prefix='/api/common')
+app.register_blueprint(user, url_prefix='/api/user')
+app.register_blueprint(transcript, url_prefix='/api/transcript')
 
 if __name__ == '__main__':
     app.run('localhost', 5000, debug=True)
