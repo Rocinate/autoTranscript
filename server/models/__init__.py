@@ -9,8 +9,8 @@ class User(db.Model):
     password = db.Column(db.String(80), nullable = False)
     email = db.Column(db.String(50), unique = True, nullable = False)
     registered_on = db.Column(db.DateTime, nullable = False, default = db.func.current_timestamp())
-    chat_times = db.Column(db.Integer, nullable = False, default = 0)
     require_times = db.Column(db.Integer, nullable = False, default = 0)
+    transcription_count = db.Column(db.Integer, nullable = False, default = 0)
 
     def __init__(self, username, password, email):
         self.username = username

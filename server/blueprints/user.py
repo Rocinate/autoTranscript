@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from models import User, Transcript, TransHistory, db
 
 user = Blueprint('user', __name__)
@@ -89,4 +89,25 @@ def login():
     # generate token
     token = create_access_token(identity=user.id)
     response_object['token'] = token
+    return jsonify(response_object)
+
+@user.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    response_object = {'status': 'success'}
+    user_id = get_jwt_identity()
+
+    # check if user exists
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        response_object['msg'] = 'User does not exist'
+        response_object['status'] = 'fail'
+        return jsonify(response_object), 400
+
+    response_object['username'] = user.username
+    response_object['email'] = user.email
+    response_object['require_times'] = user.require_times
+    response_object['transcription_count'] = user.transcription_count
+    response_object['registered_on'] = user.registered_on.strftime("%Y-%m-%d %H:%M:%S")
+
     return jsonify(response_object)

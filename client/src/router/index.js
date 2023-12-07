@@ -59,7 +59,12 @@ const router = createRouter({
 // add guard to routes
 router.beforeEach(async (to, from) => {
   if (to.meta.requiresAuth && to.name !== 'Login') {
-    return { name: 'Login' }
+
+    // check if user is authenticated
+    const isAuthenticated = sessionStorage.getItem('token')
+    if (!isAuthenticated) {
+      return { name: 'Login' }
+    }
   }
   NProgress.start()
 })
