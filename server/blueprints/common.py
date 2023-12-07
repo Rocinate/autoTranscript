@@ -1,6 +1,7 @@
 import os
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import asyncio
 from configs import UPLOAD_FOLDER
 from utils import extract_audio
 
@@ -26,11 +27,10 @@ TRANSCRIPTS = [
 def ping_pong():
     return jsonify('pong!')
 
-# accept the media user uploaded, check if the file is video, if so, capture audio
+# accept the media user uploaded, check if the file is video, if so, save corresponding file
 @common.route('/upload', methods=['POST'])
 @jwt_required()
 def upload():
-# username = get_jwt_identity()
     response_object = {'status': 'success'}
     file = request.files['file']
     if file:
@@ -47,20 +47,29 @@ def upload():
         file.save(UPLOAD_FOLDER, filename)
         filePath = os.path.join(UPLOAD_FOLDER, filename)
 
-        # check if the file is video, if so, capture audio
+        # file type 
+        isVideo = False
         if filename.endswith('.mp4'):
+            isVideo = True
+
+        # check if the file is video, if so, capture audio
+        if isVideo:
+            # extract audio from video
             audio = extract_audio(filePath)
-            response_object['audio'] = audio
+            response_object['path'] = audio
         else:
-            response_object['audio'] = filePath
+            response_object['path'] = filePath
 
         response_object['msg'] = 'File uploaded successfully'
-        response_object['audio_path'] = filePath
     else:
         response_object['msg'] = 'No file uploaded'
         response_object['status'] = 'fail'
 
     return jsonify(response_object)
+
+@common.route('/file/<filename>', methods=['GET'])
+def get_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 # @app.route('/transcripts', methods=['GET', 'POST'])
 # def all_transcripts():
