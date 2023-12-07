@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token
 from models import User, Transcript, TransHistory, db
 
 user = Blueprint('user', __name__)
@@ -68,6 +68,6 @@ def login():
         return jsonify(response_object), 400
 
     # generate token
-    token = user.generate_token()
+    token = create_access_token(identity=username)
     response_object['token'] = token
     return jsonify(response_object)

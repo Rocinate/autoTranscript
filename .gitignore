@@ -4,3 +4,4 @@
 **/dist
 *.tgz
 **/__pycache__
+**/uploads

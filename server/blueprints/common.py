@@ -1,3 +1,11 @@
+import os
+from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from configs import UPLOAD_FOLDER
+from utils import extract_audio
+
+common = Blueprint("common", __name__)
+
 TRANSCRIPTS = [
     {
         'title': "demo1",
@@ -14,105 +22,141 @@ TRANSCRIPTS = [
 ]
 
 # sanity check route
-@app.route('/ping', methods=['GET'])
+@common.route('/ping', methods=['GET'])
 def ping_pong():
     return jsonify('pong!')
 
-@app.route('/transcripts', methods=['GET', 'POST'])
-def all_transcripts():
+# accept the media user uploaded, check if the file is video, if so, capture audio
+@common.route('/upload', methods=['POST'])
+@jwt_required()
+def upload():
+# username = get_jwt_identity()
     response_object = {'status': 'success'}
-    if request.method == 'POST':
-        post_data = request.get_json()
-        print(post_data)
-        task = post_data.get('task')
-        content = post_data.get('content')
+    file = request.files['file']
+    if file:
+        # get file name
+        filename = file.filename
 
-        if task == "Key points identification":
-            analysis = key_points_extraction(content)
-        if task == "Summary extraction":
-            analysis = summary_extraction(content)
-        if task == "Action item extraction":
-            analysis = key_points_extraction(content)
-        if task == "Sentiment analysis":
-            analysis = sentiment_analysis(content)
-        
-        TRANSCRIPTS.append({
-            'title': post_data.get('title'),
-            'content': post_data.get('content'),
-            'analysis': analysis,
-            'task': task
-        })
-        response_object['message'] = "Your transcript's analysis has been generated!"
+        # check if the file extension is valid
+        if filename.split('.')[-1] not in ['mp4', 'mp3']:
+            response_object['msg'] = 'Invalid file extension'
+            response_object['status'] = 'fail'
+            return jsonify(response_object), 400
+
+        # save file
+        file.save(UPLOAD_FOLDER, filename)
+        filePath = os.path.join(UPLOAD_FOLDER, filename)
+
+        # check if the file is video, if so, capture audio
+        if filename.endswith('.mp4'):
+            audio = extract_audio(filePath)
+            response_object['audio'] = audio
+        else:
+            response_object['audio'] = filePath
+
+        response_object['msg'] = 'File uploaded successfully'
+        response_object['audio_path'] = filePath
     else:
-        response_object['transcripts'] = TRANSCRIPTS
+        response_object['msg'] = 'No file uploaded'
+        response_object['status'] = 'fail'
+
     return jsonify(response_object)
 
+# @app.route('/transcripts', methods=['GET', 'POST'])
+# def all_transcripts():
+#     response_object = {'status': 'success'}
+#     if request.method == 'POST':
+#         post_data = request.get_json()
+#         print(post_data)
+#         task = post_data.get('task')
+#         content = post_data.get('content')
 
-def summary_extraction(transcript):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the following text and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Please use less than 30 words."
-            },
-            {
-                "role": "user",
-                "content": transcript
-            }
-        ]
-    )
-    return response.choices[0].message.content
-
-def key_points_extraction(transcript):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a proficient AI with a specialty in distilling information into key points. Based on the following text, identify and list the main points that were discussed or brought up. These should be the most important ideas, findings, or topics that are crucial to the essence of the discussion. Your goal is to provide a list that someone could read to quickly understand what was talked about. Please use less than 30 words."
-            },
-            {
-                "role": "user",
-                "content": transcript
-            }
-        ]
-    )
-    return response.choices[0].message.content
+#         if task == "Key points identification":
+#             analysis = key_points_extraction(content)
+#         if task == "Summary extraction":
+#             analysis = summary_extraction(content)
+#         if task == "Action item extraction":
+#             analysis = key_points_extraction(content)
+#         if task == "Sentiment analysis":
+#             analysis = sentiment_analysis(content)
+        
+#         TRANSCRIPTS.append({
+#             'title': post_data.get('title'),
+#             'content': post_data.get('content'),
+#             'analysis': analysis,
+#             'task': task
+#         })
+#         response_object['message'] = "Your transcript's analysis has been generated!"
+#     else:
+#         response_object['transcripts'] = TRANSCRIPTS
+#     return jsonify(response_object)
 
 
-def action_item_extraction(transcript):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an AI expert in analyzing conversations and extracting action items. Please review the text and identify any tasks, assignments, or actions that were agreed upon or mentioned as needing to be done. These could be tasks assigned to specific individuals, or general actions that the group has decided to take. Please list these action items clearly and concisely. Please use less than 30 words."
-            },
-            {
-                "role": "user",
-                "content": transcript
-            }
-        ]
-    )
-    return response.choices[0].message.content
+# def summary_extraction(transcript):
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         temperature=0,
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the following text and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Please use less than 30 words."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": transcript
+#             }
+#         ]
+#     )
+#     return response.choices[0].message.content
 
-def sentiment_analysis(transcript):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        messages=[
-            {
-                "role": "system",
-                "content": "As an AI with expertise in language and emotion analysis, your task is to analyze the sentiment of the following text. Please consider the overall tone of the discussion, the emotion conveyed by the language used, and the context in which words and phrases are used. Indicate whether the sentiment is generally positive, negative, or neutral, and provide brief explanations for your analysis where possible. Please use less than 30 words."
-            },
-            {
-                "role": "user",
-                "content": transcript
-            }
-        ]
-    )
-    return response.choices[0].message.content
+# def key_points_extraction(transcript):
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         temperature=0,
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "You are a proficient AI with a specialty in distilling information into key points. Based on the following text, identify and list the main points that were discussed or brought up. These should be the most important ideas, findings, or topics that are crucial to the essence of the discussion. Your goal is to provide a list that someone could read to quickly understand what was talked about. Please use less than 30 words."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": transcript
+#             }
+#         ]
+#     )
+#     return response.choices[0].message.content
+
+
+# def action_item_extraction(transcript):
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         temperature=0,
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "You are an AI expert in analyzing conversations and extracting action items. Please review the text and identify any tasks, assignments, or actions that were agreed upon or mentioned as needing to be done. These could be tasks assigned to specific individuals, or general actions that the group has decided to take. Please list these action items clearly and concisely. Please use less than 30 words."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": transcript
+#             }
+#         ]
+#     )
+#     return response.choices[0].message.content
+
+# def sentiment_analysis(transcript):
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         temperature=0,
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "As an AI with expertise in language and emotion analysis, your task is to analyze the sentiment of the following text. Please consider the overall tone of the discussion, the emotion conveyed by the language used, and the context in which words and phrases are used. Indicate whether the sentiment is generally positive, negative, or neutral, and provide brief explanations for your analysis where possible. Please use less than 30 words."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": transcript
+#             }
+#         ]
+#     )
+#     return response.choices[0].message.content
