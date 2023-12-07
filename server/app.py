@@ -38,8 +38,9 @@ jwt.init_app(app)
 # connect db and create all the tables if not exist
 # db.init_app(app)
 
-# Perform actions that require the application context
-# with app.app_context():
+# # create all the tables if not exist
+# @app.before_first_request
+# def create_tables():
 #     db.create_all()
 
 # register blueprints

@@ -68,6 +68,6 @@ def login():
         return jsonify(response_object), 400
 
     # generate token
-    token = create_access_token(identity=username)
+    token = create_access_token(identity=user.id)
     response_object['token'] = token
     return jsonify(response_object)
