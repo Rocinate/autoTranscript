@@ -72,11 +72,11 @@ async def create_transcript():
     # check if all data is provided
     title = post_data.get('title')
     content = post_data.get('content')
-    task = post_data.get('task')
-    audio_path = post_data.get('audio_path')
+    task = post_data.get('type')
+    audio_name = post_data.get('audio_name')
     user_id = get_jwt_identity()
 
-    if not title or (not content and not audio_path) or not task:
+    if not title or (not content and not audio_name) or not task:
         response_object['msg'] = 'Invalid payload'
         response_object['status'] = 'fail'
         return jsonify(response_object), 400
@@ -95,7 +95,7 @@ async def create_transcript():
             content = content,
             task = task,
             user_id = user_id,
-            audio_path = audio_path
+            audio_name = audio_name
         )
         db.session.add(transcript)
         db.session.commit()

@@ -44,8 +44,8 @@ def upload():
             return jsonify(response_object), 400
 
         # save file
-        file.save(UPLOAD_FOLDER, filename)
         filePath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filePath)
 
         # file type 
         isVideo = False

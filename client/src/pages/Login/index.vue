@@ -8,6 +8,7 @@
         @finish="onFinish"
       >
       <a-form-item
+          v-if="isSignup"
           label="email"
           name="email"
           :rules="[{ required: true, validator: checkEmail, trigger: 'blur' }]"
@@ -105,15 +106,19 @@ const checkEmail = async (rule, value) => {
 const onFinish = (values) => {
   if (isSignup.value) {
     request.post("/user/signup", values).then((res) => {
-      message.success("Signup successfully!");
       sessionStorage.setItem("token", res.token);
-      router.push("/")
+      message.success("Signup successfully! Redirecting", 3);
+      setTimeout(() => {
+        router.push("/")
+      }, 3000)
     });
   } else {
     request.post("/user/login", values).then((res) => {
-      message.success("Login successfully!");
+      message.success("Login successfully! Redirecting", 3);
       sessionStorage.setItem("token", res.token);
-      router.push("/")
+      setTimeout(() => {
+        router.push("/")
+      }, 3000)
     });
   }
 };

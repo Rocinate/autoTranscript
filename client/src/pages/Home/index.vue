@@ -32,7 +32,6 @@
           name="custom-validation"
           :model="formState"
           @finish="handleFinish"
-          @finishFailed="handleFinishFailed"
         >
           <a-form-item has-feedback label="Title" name="title">
             <a-input
@@ -56,6 +55,7 @@
           </a-form-item>
           <a-form-item has-feedback label="Content" name="content">
             <a-input
+              :disabled="formState.upload.length > 0"
               v-model:value="formState.content"
               type="text"
               autocomplete="off"
@@ -63,9 +63,12 @@
           </a-form-item>
           <a-form-item label="Upload" name="upload">
             <a-upload-dragger
+              :maxCount="1"
+              accept=".mp3,.mp4"
               v-model:fileList="formState.upload"
               :headers="headers"
               :action="action"
+              :beforeUpload="beforeUpload"
               @change="handleChange"
               @drop="handleDrop"
             >
@@ -93,9 +96,12 @@
 
 <script setup>
 import { ref, reactive, toRaw } from "vue";
-import { message } from "ant-design-vue";
+import { message, Upload } from "ant-design-vue";
 import { InboxOutlined } from "@ant-design/icons-vue";
+import { useRouter } from "vue-router";
+import request from "../../utils/request";
 
+const router = useRouter();
 const action = import.meta.env.MODE === 'development' ? 'http://localhost:5000/api/common/upload' : '/api/common/upload'
 const headers = {
   Authorization: `Bearer ${sessionStorage.getItem("token")}`
@@ -106,12 +112,26 @@ const formState = reactive({
   title: "",
   content: "",
   type: "",
-  resource: "",
   upload: [],
 });
 
 const validateContent = async (_rule, value) => {
-  
+  if (value === "" && formState.upload.length === 0) {
+    return Promise.reject("Please input content or upload a file");
+  } else {
+    return Promise.resolve();
+  }
+};
+
+// limit file type to mp3 and mp4
+const beforeUpload = (file) => {
+  const isValid = file.type === "audio/mp3" || file.type === "video/mp4";
+  if (!isValid) {
+    message.error("You can only upload mp3 or mp4 files!");
+    return Upload.LIST_IGNORE;
+  } else {
+    return true;
+  }
 };
 
 const rules = {
@@ -137,12 +157,20 @@ const rules = {
 };
 
 const handleFinish = () => {
-  // console.log(toRaw(formState));
-  console.log(handleFinishFailed);
-};
+  const data = toRaw(formState);
 
-const handleFinishFailed = (errors) => {
-  console.log(errors);
+  if (data.upload.length > 0) {
+    data['content'] = '';
+    data['audio_name'] = data.upload[0].name.split('.')[0] + ".mp3";
+  }
+
+  request.post("/api/transcript/create", data).then((res) => {
+    if (res.status === 'success') {
+      message.success("Task created successfully");
+    } else {
+      message.error("Task created failed");
+    }
+  })
 };
 
 const resetForm = () => {
@@ -157,26 +185,27 @@ const handleJump = () => {
 
 // process file upload
 const handleChange = (info) => {
-  // limit file number to 1
-  let resFileList = [...info.fileList];
-  resFileList = resFileList.slice(-1);
-  formState.upload.value = resFileList;
-
   // get status of the uploading file
   const status = info.file.status;
 
-  if (status !== "uploading") {
-    console.log(info.file, info.fileList);
-  }
   if (status === "done") {
-    message.success(`${info.file.name} file uploaded successfully.`);
+    message.success(`File uploaded successfully.`);
   } else if (status === "error") {
-    message.error(`${info.file.name} file upload failed.`, 5);
+    const response = info.file.response;
+
+    // if 401, redirect to login page
+    if (response.msg === "Token has expired") {
+      message.error(`Login expired, redirecting in 3s`, 3);
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+    } else {
+      message.error(`${response.msg}`, 3);
+    }
   }
 };
 
 function handleDrop(e) {
-  //   console.log(e);
   console.log("drop");
 }
 </script>
