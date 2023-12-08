@@ -1,10 +1,11 @@
-import asyncio
 from flask import Blueprint, jsonify, request, current_app
+from concurrent.futures import ThreadPoolExecutor
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import User, Transcript, TransHistory, db
-from controller.transcript import create_task
+from controller.transcriptController import create_task
 
 transcript = Blueprint('transcript', __name__)
+executor = ThreadPoolExecutor(5)
 
 @transcript.route('/list', methods=['GET'])
 @jwt_required()
@@ -22,7 +23,8 @@ def get_task_list():
     # get task list
     try:
         transcript = Transcript.query.filter_by(user_id=user_id).all()
-        response_object['transcript'] = transcript
+        # convert to json
+        response_object['transcript'] = jsonify(transcript)
         response_object['msg'] = 'Get task list successfully'
     except Exception as e:
         response_object['msg'] = str(e)
@@ -65,7 +67,7 @@ def get_task_detail():
 
 @transcript.route('/create', methods=['POST'])
 @jwt_required()
-async def create_transcript():
+def create_transcript():
     response_object = {'status': 'success'}
     post_data = request.get_json()
 
@@ -106,14 +108,13 @@ async def create_transcript():
         return jsonify(response_object), 400
     
     # create task
-    asyncio.run(create_task(transcript))
+    executor.submit(create_task, transcript.id)
 
     return jsonify(response_object)
-    
 
 @transcript.route('/update', methods=['POST'])
 @jwt_required()
-async def update_transcript():
+def update_transcript():
     response_object = {'status': 'success'}
     post_data = request.get_json()
 
@@ -153,15 +154,17 @@ async def update_transcript():
             analysis = transcript.analysis,
             task = transcript.task,
             user_id = transcript.user_id,
-            finished = transcript.finished,
+            status = transcript.status,
             audio_path = transcript.audio_path
         )
         transcript.title = title
         transcript.content = content
         transcript.task = task
         transcript.audio_path = audio_path
-        transcript.finished = False
+        transcript.status = "Running"
         transcript.analysis = None
+
+        db.session.add(history)
         db.session.commit()
 
         response_object['msg'] = 'Update transcript successfully'
@@ -172,7 +175,7 @@ async def update_transcript():
     
     return jsonify(response_object)
 
-
+# delete transcript, need to cancel the task first???
 @transcript.route('/delete', methods=['POST'])
 @jwt_required()
 def delete_transcript():
@@ -194,7 +197,7 @@ def delete_transcript():
         response_object['msg'] = 'Transcript does not exist'
         response_object['status'] = 'fail'
         return jsonify(response_object), 400
-    
+
     # delete transcript
     try:
         transcript.delete()

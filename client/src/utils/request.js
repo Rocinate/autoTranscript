@@ -1,5 +1,6 @@
 import axios from "axios";
 import { message } from "ant-design-vue";
+import router from '../router/index'
 
 const request = axios.create({
   baseURL: import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "/api",
@@ -24,15 +25,23 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     if (response.status !== 200) {
-        message.error(response.data.msg, 5)
+      const msg = response.data.msg || "Error";
+        message.error(msg, 5)
         return Promise.reject(response.data.msg)
     } else {
         return Promise.resolve(response.data)
     }
   },
   (error) => {
-    message.error(error)
-    return Promise.reject(error);
+    message.error(error.response.data.msg || error.message)
+
+    if (error.response.status === 401) {
+      sessionStorage.removeItem("token");
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000)
+    }
+    return Promise.reject(error.response.data.msg || error.message);
   }
 );
 

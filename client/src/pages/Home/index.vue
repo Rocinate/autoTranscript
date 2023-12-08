@@ -164,12 +164,9 @@ const handleFinish = () => {
     data['audio_name'] = data.upload[0].name.split('.')[0] + ".mp3";
   }
 
-  request.post("/api/transcript/create", data).then((res) => {
-    if (res.status === 'success') {
-      message.success("Task created successfully");
-    } else {
-      message.error("Task created failed");
-    }
+  request.post("/transcript/create", data).then((res) => {
+    message.success("Task created successfully", 3);
+    resetForm();
   })
 };
 

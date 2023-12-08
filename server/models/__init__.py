@@ -33,17 +33,17 @@ class Transcript(db.Model):
     task = db.Column(db.String(50), nullable = False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
     created_on = db.Column(db.DateTime, nullable = False, default = db.func.current_timestamp())
-    finished = db.Column(db.Boolean, nullable = False, default = False)
+    status = db.Column(db.String(10), nullable = False, default = 'Running')
     analysis = db.Column(db.Text, nullable = True)
     audio_name = db.Column(db.String(200), nullable = True)
 
-    def __init__(self, title, content,task, user_id, finished = True, analysis = None, audio_name = None):
+    def __init__(self, title, content,task, user_id, status = "Running", analysis = None, audio_name = None):
         self.title = title
         self.content = content
         self.analysis = analysis
         self.task = task
         self.user_id = user_id
-        self.finished = finished
+        self.status = status
         self.audio_name = audio_name
 
 class TransHistory(db.Model):
@@ -56,15 +56,15 @@ class TransHistory(db.Model):
     task = db.Column(db.String(50), nullable = False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
     created_on = db.Column(db.DateTime, nullable = False, default = db.func.current_timestamp())
-    finished = db.Column(db.Boolean, nullable = False, default = True)
+    status = db.Column(db.Boolean, nullable = False, default = True)
     audio_name = db.Column(db.String(200), nullable = True)
 
-    def __init__(self, parent_id, title, content, analysis, task, user_id, finished = True, audio_name = None):
+    def __init__(self, parent_id, title, content, analysis, task, user_id, status = "Running", audio_name = None):
         self.parent_id = parent_id
         self.title = title
         self.content = content
         self.analysis = analysis
         self.task = task
         self.user_id = user_id
-        self.finished = finished
+        self.status = status
         self.audio_name = audio_name
