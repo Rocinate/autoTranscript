@@ -8,6 +8,7 @@ def summary_extraction(transcript):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         temperature=0,
+        n=1,
         messages=[
             {
                 "role": "system",
@@ -23,6 +24,7 @@ def key_points_extraction(transcript):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         temperature=0,
+        n=1,
         messages=[
             {
                 "role": "system",
@@ -38,6 +40,7 @@ def action_item_extraction(transcript):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         temperature=0,
+        n=1,
         messages=[
             {
                 "role": "system",
@@ -53,6 +56,7 @@ def sentiment_analysis(transcript):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         temperature=0,
+        n=1,
         messages=[
             {
                 "role": "system",
@@ -83,6 +87,9 @@ def create_task(id: int):
             if transcript.audio_name:
                 text = audio2text(transcript.audio_name)
                 transcript.content = text
+
+            # commit first incase the task is running for a long time
+            db.session.commit()
 
             # run the task
             result = run_task(transcript)

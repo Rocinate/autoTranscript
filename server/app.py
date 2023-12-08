@@ -57,5 +57,6 @@ app.register_blueprint(common, url_prefix='/api/common')
 app.register_blueprint(user, url_prefix='/api/user')
 app.register_blueprint(transcript, url_prefix='/api/transcript')
 
+
 if __name__ == '__main__':
     app.run('localhost', 5000, debug=True)

@@ -1,14 +1,20 @@
 <template>
   <a-row justify="center">
-    <a-modal v-model:open="open" title="Basic Modal" @ok="handleOk">
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-    </a-modal>
-    <a-modal v-model:open="detailOpen" title="Basic Modal">
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
+    <a-modal
+      v-model:open="open"
+      :cancel-button-props="hideCancel"
+      title="Task detail"
+      width="1000px"
+      @ok="handleOk"
+    >
+      <a-collapse v-model:activeKey="activeKey">
+        <a-collapse-panel key="1" header="Analysis">
+          <p>{{ showRecord.analysis }}</p>
+        </a-collapse-panel>
+        <a-collapse-panel key="2" header="Content">
+          <p>{{ showRecord.content }}</p>
+        </a-collapse-panel>
+      </a-collapse>
     </a-modal>
     <a-col :span="20">
       <p class="title">History</p>
@@ -20,11 +26,19 @@
             <a-tag v-if="text === 'Failed'" color="red">{{ text }}</a-tag>
           </template>
           <template v-if="column.dataIndex === 'audio_path'">
-            <a-button type="link" v-if="text === ''" disabled>{{ "None" }}</a-button>
-            <a-button type="link" v-if="text !== ''" :href="text" target="_blank">{{ "Download" }}</a-button> 
+            <a-button type="link" v-if="text === ''" disabled>{{
+              "None"
+            }}</a-button>
+            <a-button
+              type="link"
+              v-if="text !== ''"
+              :href="text"
+              target="_blank"
+              >{{ "Download" }}</a-button
+            >
           </template>
           <template v-if="column.dataIndex === 'action'">
-            <a style="margin-right: 1rem" @click="onShow(record)">Update</a>
+            <a style="margin-right: 1rem" @click="onShow(record)">Check</a>
 
             <a-popconfirm
               v-if="dataSource.length"
@@ -51,7 +65,14 @@ import request from "../../utils/request";
 
 const router = useRouter();
 const open = ref(false);
-const detailOpen = ref(false);
+const activeKey = ref(["1", "2"]);
+const showRecord = ref({});
+
+const hideCancel = {
+  style: {
+    display: "none",
+  },
+};
 
 const columns = [
   {
@@ -76,9 +97,9 @@ const columns = [
   //   ellipsis: true,
   // },
   {
-    title: 'created_on',
-    dataIndex: 'created_on',
-    key: 'created_on',
+    title: "created_on",
+    dataIndex: "created_on",
+    key: "created_on",
   },
   {
     title: "audio",
@@ -92,17 +113,7 @@ const columns = [
   },
 ];
 
-const dataSource = ref([
-  {
-    key: "0",
-    name: "Edward King 0",
-    content: "London, Park Lane no. 0",
-    task: "summary",
-    status: "finished",
-    audio: "",
-    action: "edit",
-  },
-]);
+const dataSource = ref([]);
 
 const fetchData = () => {
   // fetch data from server
@@ -118,11 +129,16 @@ const onDelete = (id) => {
 };
 
 const onShow = (record) => {
-    open.value = true;
-}
+  showRecord.value = record
+  open.value = true;
 
-fetchData()
+};
 
+const handleOk = () => {
+  open.value = false;
+};
+
+fetchData();
 </script>
 
 <style scoped>

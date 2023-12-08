@@ -54,7 +54,7 @@
             </a-select>
           </a-form-item>
           <a-form-item has-feedback label="Content" name="content">
-            <a-input
+            <a-textarea
               :disabled="formState.upload.length > 0"
               v-model:value="formState.content"
               type="text"

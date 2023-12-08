@@ -51,8 +51,9 @@ class Transcript(db.Model):
             "id": self.id,
             "title": self.title,
             "task": self.task,
-            "created_on": self.created_on,
+            "created_on": self.created_on.strftime("%Y-%m-%d %H:%M:%S"),
             "status": self.status,
+            "content": self.content,
             "analysis": self.analysis,
             "audio_path": f"/common/file/{self.audio_name}" if self.audio_name else ""
         }
