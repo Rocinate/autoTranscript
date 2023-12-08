@@ -64,6 +64,7 @@
           <a-form-item label="Upload" name="upload">
             <a-upload-dragger
               v-model:fileList="formState.upload"
+              :headers="headers"
               :action="action"
               @change="handleChange"
               @drop="handleDrop"
@@ -96,6 +97,9 @@ import { message } from "ant-design-vue";
 import { InboxOutlined } from "@ant-design/icons-vue";
 
 const action = import.meta.env.MODE === 'development' ? 'http://localhost:5000/api/common/upload' : '/api/common/upload'
+const headers = {
+  Authorization: `Bearer ${sessionStorage.getItem("token")}`
+}
 
 const formRef = ref();
 const formState = reactive({

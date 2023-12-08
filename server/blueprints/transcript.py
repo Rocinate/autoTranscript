@@ -6,7 +6,7 @@ from controller.transcript import create_task
 
 transcript = Blueprint('transcript', __name__)
 
-@transcript.route('/get', methods=['GET'])
+@transcript.route('/list', methods=['GET'])
 @jwt_required()
 def get_task_list():
     response_object = {'status': 'success'}

@@ -5,6 +5,11 @@
       <p>Some contents...</p>
       <p>Some contents...</p>
     </a-modal>
+    <a-modal v-model:open="detailOpen" title="Basic Modal">
+      <p>Some contents...</p>
+      <p>Some contents...</p>
+      <p>Some contents...</p>
+    </a-modal>
     <a-col :span="20">
       <p class="title">History</p>
       <a-table :dataSource="dataSource" :columns="columns" bordered>
@@ -36,9 +41,11 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import request from "../../utils/request";
 
 const router = useRouter();
 const open = ref(false);
+const detailOpen = ref(false);
 
 const columns = [
   {
@@ -85,6 +92,14 @@ const dataSource = ref([
   },
 ]);
 
+const fetchData = () => {
+  // fetch data from server
+  request.get("/transcript/list").then((res) => {
+    // Object.assign(info, res)
+    console.log(res)
+  });
+};
+
 const onDelete = (key) => {
   console.log(key);
 };
@@ -92,6 +107,8 @@ const onDelete = (key) => {
 const onShow = (record) => {
     open.value = true;
 }
+
+fetchData()
 
 </script>
 
