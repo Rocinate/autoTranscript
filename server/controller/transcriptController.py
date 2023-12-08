@@ -66,9 +66,9 @@ def sentiment_analysis(transcript):
 
 function_map = {
     "Key points identification": key_points_extraction,
-    "Summary extraction": summary_extraction,
     "Action item extraction": action_item_extraction,
-    "Sentiment analysis": sentiment_analysis,
+    "summary": summary_extraction,
+    "sentiment": sentiment_analysis,
 }
 
 
@@ -88,10 +88,10 @@ def create_task(id: int):
             result = run_task(transcript)
 
             if not result:
-                transcript.finished = False
+                transcript.status = "Failed"
             else:
                 # update the transcript status
-                transcript.finished = True
+                transcript.status = "Finished"
 
             # save the transcript update
             db.session.commit()
@@ -103,8 +103,13 @@ def create_task(id: int):
 
 
 def audio2text(audio_name):
+    file = open(UPLOAD_FOLDER + "/" + audio_name, "rb")
+
+    if not file:
+        return None
+
     response = client.audio.transcriptions.create(
-        file=open(UPLOAD_FOLDER + "/" + audio_name, "rb"),
+        file=file,
         model="whisper-1",
         response_format="text",
         language="en"

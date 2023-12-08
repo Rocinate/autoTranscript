@@ -46,6 +46,17 @@ class Transcript(db.Model):
         self.status = status
         self.audio_name = audio_name
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "task": self.task,
+            "created_on": self.created_on,
+            "status": self.status,
+            "analysis": self.analysis,
+            "audio_path": f"/common/file/{self.audio_name}" if self.audio_name else ""
+        }
+
 class TransHistory(db.Model):
     __tablename__ = 'transHistory'
     id = db.Column(db.Integer, primary_key = True)

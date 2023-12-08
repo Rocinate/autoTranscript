@@ -22,9 +22,9 @@ def get_task_list():
     
     # get task list
     try:
-        transcript = Transcript.query.filter_by(user_id=user_id).all()
+        transcripts = Transcript.query.filter_by(user_id=user_id).all()
         # convert to json
-        response_object['transcript'] = jsonify(transcript)
+        response_object['data'] = [t.to_dict() for t in transcripts]
         response_object['msg'] = 'Get task list successfully'
     except Exception as e:
         response_object['msg'] = str(e)
@@ -200,7 +200,7 @@ def delete_transcript():
 
     # delete transcript
     try:
-        transcript.delete()
+        db.session.delete(transcript)
         db.session.commit()
         response_object['msg'] = 'Delete transcript successfully'
     except Exception as e:

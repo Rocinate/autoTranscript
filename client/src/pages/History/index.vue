@@ -14,8 +14,14 @@
       <p class="title">History</p>
       <a-table :dataSource="dataSource" :columns="columns" bordered>
         <template #bodyCell="{ column, text, record }">
-          <template v-if="column.dataIndex === 'audio'">
-            <a>{{ text }}</a>
+          <template v-if="column.dataIndex === 'status'">
+            <a-tag v-if="text === 'Running'" color="blue">{{ text }}</a-tag>
+            <a-tag v-if="text === 'Finished'" color="green">{{ text }}</a-tag>
+            <a-tag v-if="text === 'Failed'" color="red">{{ text }}</a-tag>
+          </template>
+          <template v-if="column.dataIndex === 'audio_path'">
+            <a-button type="link" v-if="text === ''" disabled>{{ "None" }}</a-button>
+            <a-button type="link" v-if="text !== ''" :href="text" target="_blank">{{ "Download" }}</a-button> 
           </template>
           <template v-if="column.dataIndex === 'action'">
             <a style="margin-right: 1rem" @click="onShow(record)">Update</a>
@@ -23,7 +29,7 @@
             <a-popconfirm
               v-if="dataSource.length"
               title="Sure to delete?"
-              @confirm="onDelete(record.key)"
+              @confirm="onDelete(record.id)"
             >
               <a>Delete</a>
             </a-popconfirm>
@@ -49,14 +55,9 @@ const detailOpen = ref(false);
 
 const columns = [
   {
-    title: "name",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "content",
-    dataIndex: "content",
-    key: "content",
+    title: "id",
+    dataIndex: "id",
+    key: "id",
   },
   {
     title: "task",
@@ -68,10 +69,21 @@ const columns = [
     dataIndex: "status",
     key: "status",
   },
+  // {
+  //   title: "analysis",
+  //   dataIndex: "analysis",
+  //   key: "analysis",
+  //   ellipsis: true,
+  // },
+  {
+    title: 'created_on',
+    dataIndex: 'created_on',
+    key: 'created_on',
+  },
   {
     title: "audio",
-    dataIndex: "audio",
-    key: "audio",
+    dataIndex: "audio_path",
+    key: "audio_path",
   },
   {
     title: "action",
@@ -95,13 +107,14 @@ const dataSource = ref([
 const fetchData = () => {
   // fetch data from server
   request.get("/transcript/list").then((res) => {
-    // Object.assign(info, res)
-    console.log(res)
+    dataSource.value = res.data;
   });
 };
 
-const onDelete = (key) => {
-  console.log(key);
+const onDelete = (id) => {
+  request.post("/transcript/delete", { id: id }).then((res) => {
+    fetchData();
+  });
 };
 
 const onShow = (record) => {

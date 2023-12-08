@@ -39,6 +39,7 @@ def upload():
         # check if the file is video, if so, capture audio
         if isVideo:
             # extract audio from video
+            # TODO: not file more than 25MB due to the limit of OpenAI API
             audio = extract_audio(filePath)
             response_object['path'] = audio
         else:
