@@ -9,6 +9,9 @@
       >
     </a-descriptions>
   </a-row>
+  <a-row justify="center">
+    <a-button type="primary" @click="logout">Logout</a-button>
+  </a-row>
 </template>
 
 <style scoped>
@@ -20,6 +23,14 @@
 <script setup>
 import { reactive } from "vue";
 import request from "../../utils/request";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const logout = () => {
+  sessionStorage.removeItem("token");
+  router.push("/login");
+};
 
 const info = reactive({
   username: "",

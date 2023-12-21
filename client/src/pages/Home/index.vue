@@ -51,6 +51,12 @@
               <a-select-option value="sentiment"
                 >Sentiment analysis</a-select-option
               >
+              <a-select-option value="keyIdentification"
+                >key points extraction</a-select-option
+              >
+              <a-select-option value="actionExtraction"
+                >Action item extraction</a-select-option
+              >
             </a-select>
           </a-form-item>
           <a-form-item has-feedback label="Content" name="content">

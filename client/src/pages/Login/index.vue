@@ -114,8 +114,8 @@ const onFinish = (values) => {
     });
   } else {
     request.post("/user/login", values).then((res) => {
-      message.success("Login successfully! Redirecting", 3);
       sessionStorage.setItem("token", res.token);
+      message.success("Login successfully! Redirecting", 3);
       setTimeout(() => {
         router.push("/")
       }, 3000)

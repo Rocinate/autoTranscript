@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from models import User, Transcript, TransHistory, db
+from models import User, Transcript, db
 
 user = Blueprint('user', __name__)
 
@@ -42,15 +42,17 @@ def create_user():
 
     # add user to database
     try:
-        db.session.add(User(
-            username = username,
-            password = password,
-            email = email,
-        ))
+        user = User(username=username, password=password, email=email)
+
+        db.session.add(user)
         db.session.commit()
 
         # generate token
-        token = create_access_token(identity=user.id)
+        token = create_access_token(identity={
+            'id': user.id,
+            'username': username,
+            'email': email,
+        })
         response_object['msg'] = 'User created!'
         response_object['token'] = token
         return jsonify(response_object)
@@ -87,7 +89,11 @@ def login():
         return jsonify(response_object), 400
 
     # generate token
-    token = create_access_token(identity=user.id)
+    token = create_access_token(identity={
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+    })
     response_object['token'] = token
     return jsonify(response_object)
 
@@ -95,7 +101,8 @@ def login():
 @jwt_required()
 def get_profile():
     response_object = {'status': 'success'}
-    user_id = get_jwt_identity()
+    user_info = get_jwt_identity()
+    user_id = user_info['id']
 
     # check if user exists
     user = User.query.filter_by(id=user_id).first()
@@ -103,11 +110,15 @@ def get_profile():
         response_object['msg'] = 'User does not exist'
         response_object['status'] = 'fail'
         return jsonify(response_object), 400
+    
+    # get task count
+    count = Transcript.query.filter_by(user_id=user_id).count()
 
     response_object['username'] = user.username
     response_object['email'] = user.email
     response_object['require_times'] = user.require_times
-    response_object['transcription_count'] = user.transcription_count
+    # response_object['transcription_count'] = user.transcription_count
+    response_object['transcription_count'] = count
     response_object['registered_on'] = user.registered_on.strftime("%Y-%m-%d %H:%M:%S")
 
     return jsonify(response_object)

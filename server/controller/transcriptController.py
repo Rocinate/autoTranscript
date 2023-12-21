@@ -69,8 +69,8 @@ def sentiment_analysis(transcript):
 
 
 function_map = {
-    "Key points identification": key_points_extraction,
-    "Action item extraction": action_item_extraction,
+    "keyIdentification": key_points_extraction,
+    "actionExtraction": action_item_extraction,
     "summary": summary_extraction,
     "sentiment": sentiment_analysis,
 }

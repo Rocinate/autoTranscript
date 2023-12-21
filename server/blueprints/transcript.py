@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from concurrent.futures import ThreadPoolExecutor
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import User, Transcript, TransHistory, db
+from models import User, Transcript, db
 from controller.transcriptController import create_task
 
 transcript = Blueprint('transcript', __name__)
@@ -11,7 +11,8 @@ executor = ThreadPoolExecutor(5)
 @jwt_required()
 def get_task_list():
     response_object = {'status': 'success'}
-    user_id = get_jwt_identity()
+    user_info = get_jwt_identity()
+    user_id = user_info['id']
 
     # check if user exists
     user = User.query.filter_by(id=user_id).first()
@@ -76,7 +77,8 @@ def create_transcript():
     content = post_data.get('content')
     task = post_data.get('type')
     audio_name = post_data.get('audio_name')
-    user_id = get_jwt_identity()
+    user_info = get_jwt_identity()
+    user_id = user_info['id']
 
     if not title or (not content and not audio_name) or not task:
         response_object['msg'] = 'Invalid payload'
