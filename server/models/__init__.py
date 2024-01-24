@@ -55,7 +55,7 @@ class Transcript(db.Model):
             "status": self.status,
             "content": self.content,
             "analysis": self.analysis,
-            "audio_path": f"/common/file/{self.audio_name}" if self.audio_name else ""
+            "audio_path": f"/api/common/file/{self.audio_name}" if self.audio_name else ""
         }
 
 class TransHistory(db.Model):

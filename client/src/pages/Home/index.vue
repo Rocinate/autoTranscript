@@ -7,8 +7,8 @@
         <h1>Application</h1>
       </div>
       <a-typography-title :level="4" type="secondary">
-        Explore Smart Transcript for sentiment analysis and content
-        summarization. Upload text and audio files to gain insightful analysis
+        Explore Smart Transcript for sentiment analysis, content
+        summarization, key point and action item extraction. Upload text and audio files to gain insightful analysis
         and creative responses using OpenAI api and advanced technologies.
       </a-typography-title>
       <a-button id="jump" type="primary" size="large" @click="handleJump">
